@@ -11,21 +11,30 @@
       <section class="content">
         <img class="graphic" src="graphic.png" alt="Graphic" />
         <h1>CF-Stalker.io</h1>
-        <div class="Help">
+        <!-- <div class="Help">
           <a href="#">Click here to get your API-Key and Secret</a>
-        </div>
+        </div> -->
         <div class="container">
             <form id="login-form">
-                <label for="API-KEY" class="API-KEY">Enter API - KEY :</label><br/>
-                <input type = "text" id="API-KEY-Text" name="API-KEY-Text" required><br/>
-                <label for="secret" class="secret">Enter Secret:</label><br/>
-                <input type = "password" id="Secret-Text" name="Secret-Text" required><br/><br/>
+                <label for="UserHandle" class="UserHandle">Enter User Handle</label><br/>
+                <input type = "text" id="userHandle" name="userHandle" required><br/>
                 <div class="update-button">
                   <button type="button" id ="button-save">Save</button>
                   <button type="button" id ="button-clear">Clear All</button>
                 </div>
             </form> 
             <p id="errorMessage" class="error-message"></p>
+              <div id="table-container">
+                <table id="table">
+                  <thead>
+                    <tr>
+                      <th>Handles</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="table-body"></tbody>
+                </table>
+              </div>
         </div>
       </section>
     </div>

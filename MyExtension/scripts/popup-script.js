@@ -1,48 +1,88 @@
-document.addEventListener('DOMContentLoaded',function(){
+document.addEventListener('DOMContentLoaded', function () {
+    // Retrieve user handles from chrome.storage.local
+    chrome.storage.local.get('userHandles', function (result) {
+        let userHandles = result.userHandles || [];
+        renderTable(userHandles);
+    });
 
     var buttonElement = document.getElementById("button-save");
     var buttonElementClearAll = document.getElementById("button-clear");
-    var apiKeyText = "API-KEY-Text";
-    var secretKey = "Secret-Text";
-    var apiKeyTextvalue = document.getElementById(apiKeyText);
-    var secretKeyValue  = document.getElementById(secretKey);
-    var keysToRemove = ['apiKeyText', 'secretKey'];
+    var userHandleTag = "userHandle";
+    var userHandleValue = document.getElementById(userHandleTag);
 
+    var keysToRemove = ['userHandles'];
 
-
-    buttonElement.addEventListener("click", function storeCredentials() {
-        var username = document.getElementById(apiKeyText).value;
-        var password = document.getElementById(secretKey).value;
+    buttonElement.addEventListener("click", function addUserHandle() {
+        var userHandle = document.getElementById(userHandleTag).value;
         var errorMessage = document.getElementById('errorMessage');
 
         // Simple validation (might want to add more robust validation)
-        if ((username.trim() === '' || password.trim() === '')) {
+        if (userHandle.trim() === '') {
             errorMessage.style.color = 'red';
-            errorMessage.textContent = 'Please enter both username and password.';
+            errorMessage.textContent = 'Please enter the codeforces handle!';
             return;
         }
 
-        // Store the credentials in chrome.storage.local
-        chrome.storage.local.set({ apiKeyText : username, secretKey : password },()=>{
-            errorMessage.textContent = 'Credentials Saved Successfully';
-            errorMessage.style.color = 'green';
+        // Retrieve user handles from chrome.storage.local
+        chrome.storage.local.get('userHandles', function (result) {
+            let userHandles = result.userHandles || [];
+            // Check if the user handle already exists
+            if (userHandles.indexOf(userHandle) === -1) {
+                // If not, add the user handle
+                userHandles.push(userHandle);
+                // Update chrome.storage.local with the updated array
+                chrome.storage.local.set({ 'userHandles': userHandles }, function () {
+                    renderTable(userHandles);
+                    errorMessage.textContent = 'Handle Saved Successfully!';
+                    errorMessage.style.color = 'green';
+                });
+            } else {
+                errorMessage.style.color = 'red';
+                errorMessage.textContent = 'Handle already exists!';
+            }
         });
     });
-    
 
-    // Remove the specified keys from local storage
-    buttonElementClearAll.addEventListener('click', ()=>{
-        apiKeyTextvalue.value = "";
-        secretKeyValue.value = "";
-        chrome.storage.local.remove(keysToRemove);
+    // Remove all user handles from chrome.storage.local
+    buttonElementClearAll.addEventListener('click', () => {
+        userHandleValue.value = "";
+        chrome.storage.local.remove(keysToRemove, function () {
+            renderTable([]);
+        });
     });
 
+    function renderTable(listValues) {
+        const tableBody = document.getElementById('table-body');
+        // Clear existing table rows
+        tableBody.innerHTML = '';
+        // Loop through the list values and create table rows with delete buttons
+        listValues.forEach(value => {
+            const row = tableBody.insertRow();
+            const valueCell = row.insertCell();
+            const actionCell = row.insertCell();
+            valueCell.textContent = value;
 
-    chrome.storage.local.get(['apiKeyText','secretKey'],function(result){
-        if(result.apiKeyText!==undefined && result.secretKey!==undefined){
-            document.getElementById(apiKeyText).value = result.apiKeyText;
-            document.getElementById(secretKey).value = result.secretKey;
-        }
-    });
-    
-})
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.className = 'delete-button';
+            deleteButton.onclick = function () {
+                // Retrieve user handles from chrome.storage.local
+                chrome.storage.local.get('userHandles', function (result) {
+                    let userHandles = result.userHandles || [];
+                    // Find and remove the value from the array
+                    const index = userHandles.indexOf(value);
+                    if (index !== -1) {
+                        userHandles.splice(index, 1);
+                        // Update chrome.storage.local with the updated array
+                        chrome.storage.local.set({ 'userHandles': userHandles }, function () {
+                            renderTable(userHandles);
+                        });
+                    }
+                });
+                // Remove the row from the table
+                tableBody.removeChild(row);
+            };
+            actionCell.appendChild(deleteButton);
+        });
+    }
+});
