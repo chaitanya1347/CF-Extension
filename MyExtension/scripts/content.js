@@ -9,6 +9,8 @@ function getHandles() {
   });
 }
 
+
+
 function init(handles){
 
     // ****** Generating the correct api endpoint **********
@@ -31,18 +33,58 @@ function init(handles){
     <tr>
         <th class = "left ">User</th>
         <th>Problem</th>
-        <th class="" style="width:5em;">Verdict</th>
-        <th class="" style="width:5em;">Verdict</th>
+        <th class="" style="width:5em;">Time</th>
     </tr>
     `;
+    const verdictMap = new Map([
+      ['OK', '✅'],
+      ['WRONG_ANSWER', '❌'],
+      ['TIME_LIMIT_EXCEEDED', '⏱️'],
+      ['MEMORY_LIMIT_EXCEEDED', '💾'],
+      ['DEFAULT', '⚠️']
+    ]);
 
-    // let handles = getHandles();
+    const getEmoji = (verdict) => verdictMap.get(verdict) ?? verdictMap.get('DEFAULT');
+
+
+    const ratingMap = new Map([
+      ['newbie', 'rated-user user-gray'],
+      ['pupil', 'rated-user user-green'],
+      ['specialist', 'rated-user user-cyan'],
+      ['expert', 'rated-user user-blue'],
+      ['candidate master', 'rated-user user-violet'],
+      ['master', 'rated-user user-orange'],
+      ['international grandmaster', 'rated-user user-red'],
+      ['legendary grandmaster', 'rated-user user-legendary']
+    ]);
+
     console.log(handles);
+    const oneday = 60 * 60 * 24 * 1000; //miliseconds
     const submissionsCount = 5;
     let handleCount = 0;
     handles.forEach(handle => {
       statusUrl = baseURL + `user.status?handle=${handle}&from=1&count=${submissionsCount}`;
-      console.log(statusUrl);
+      // console.log(statusUrl);
+      //Get rating
+      let rating;
+      infoUrl = baseURL + `user.info?handles=${handle}`;
+      // console.log(infoUrl);
+      fetch(infoUrl)
+        .then(res => {
+          if (!res.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return res.json();
+        })
+        .then(resBody => {
+          console.log(resBody);
+          rating = resBody.result[0].rank;
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+
+      //Get status of submissions
       fetch(statusUrl)
         .then(response => {
           if (!response.ok) {
@@ -50,32 +92,39 @@ function init(handles){
           }
           return response.json();
         })
-        .then(responseJSON => {
+        .then(responseBody => {
           for(let i=0; i<submissionsCount; i++){
-            let tableRowElement = document.createElement("tr");
-              if(i%2){
+
+
+            // if(( (new Date().getTime()) - responseBody.result[i].creationTimeSeconds*1000) < oneday){
+              handleCount++;
+
+              let tableRowElement = document.createElement("tr");
+              if(handleCount%2){
                   tableRowElement.innerHTML = `
-                      <td class = "left dark">${handle}</td>
-                      <td class = " dark">${responseJSON.result[i].problem.name}</td>
-                      <td class = " dark">PASS</td>
-                      <td class = " dark">PASS</td>
+                      <td class = "left dark"><a class = "${ratingMap.get(rating)}" href="/profile/${handle}"> ${handle} </a> </td>
+                      <td class = " dark" >
+                      ${responseBody.result[i].problem.name}
+                      ${getEmoji(responseBody.result[i].verdict)}
+                      </td>
+                      <td class = " dark">xyz seconds ago</td>
                   `;
               }
               else {
                   tableRowElement.innerHTML = `
-                  <td class = "left ">${handle}</td>
-                  <td class = " ">${responseJSON.result[i].problem.name}</td>
-                  <td class = " ">PASS</td>
-                  <td class = " ">PASS</td>
+                  <td class = "left"><a class = "${ratingMap.get(rating)}" href="/profile/${handle}"> ${handle} </a></td>
+                  <td class = " ">${responseBody.result[i].problem.name} ${getEmoji(responseBody.result[i].verdict)}</td>
+                  <td class = " ">xyz seconds ago</td>
                   `;
               }
               tableBody.appendChild(tableRowElement);
+            // }
           }
         })
         .catch(error => {
           console.error('Error:', error);
         });
-        handleCount++;
+        
     });
     
     let el1 = document.querySelector("#sidebar > div:nth-child(1)");
