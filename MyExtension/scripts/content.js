@@ -94,9 +94,8 @@ function init(handles){
         })
         .then(responseBody => {
           for(let i=0; i<submissionsCount; i++){
-
-
-            // if(( (new Date().getTime()) - responseBody.result[i].creationTimeSeconds*1000) < oneday){
+            const submissionTime = responseBody.result[i].creationTimeSeconds*1000;
+            if(( (new Date().getTime()) - responseBody.result[i].creationTimeSeconds*1000) < oneday){
               handleCount++;
 
               let tableRowElement = document.createElement("tr");
@@ -104,21 +103,29 @@ function init(handles){
                   tableRowElement.innerHTML = `
                       <td class = "left dark"><a class = "${ratingMap.get(rating)}" href="/profile/${handle}"> ${handle} </a> </td>
                       <td class = " dark" >
-                      ${responseBody.result[i].problem.name}
-                      ${getEmoji(responseBody.result[i].verdict)}
+                        <a href = "/problemset/problem/${responseBody.result[i].problem.contestId}/${responseBody.result[i].problem.index}">
+                          ${responseBody.result[i].problem.name}
+                          ${getEmoji(responseBody.result[i].verdict)}
+                        </a>
                       </td>
-                      <td class = " dark">xyz seconds ago</td>
+                      <td class = " dark">${new Date(submissionTime).toLocaleTimeString()}</td>
                   `;
               }
               else {
                   tableRowElement.innerHTML = `
                   <td class = "left"><a class = "${ratingMap.get(rating)}" href="/profile/${handle}"> ${handle} </a></td>
-                  <td class = " ">${responseBody.result[i].problem.name} ${getEmoji(responseBody.result[i].verdict)}</td>
-                  <td class = " ">xyz seconds ago</td>
+                  <td class = " ">
+                    <a href = "/problemset/problem/${responseBody.result[i].problem.contestId}/${responseBody.result[i].problem.index}">
+                      ${responseBody.result[i].problem.name}
+                      ${getEmoji(responseBody.result[i].verdict)}
+                    </a>
+                  </td>
+
+                  <td class = " ">${(new Date(submissionTime)).toLocaleTimeString()}</td>
                   `;
               }
               tableBody.appendChild(tableRowElement);
-            // }
+            }
           }
         })
         .catch(error => {

@@ -120,3 +120,11 @@ button:hover {
   padding: 10px;
   font-size: 14px;
 }
+
+.UserHandle{
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 500;
+}
+.heading {
+  font-family: 'Courier New', Courier, monospace;
+}
