@@ -72,9 +72,13 @@ async function init(handles) {
               if ((new Date().getTime()) - responseBody.result[i].creationTimeSeconds * 1000 < oneday) {
                   handleCount++;
 
+                    const dateObj = new Date(submissionTime);
+                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    const formattedTime = `${monthNames[dateObj.getMonth()]}/${dateObj.getDate()}/${dateObj.getFullYear()} ${dateObj.toLocaleTimeString()}<sup title="timezone offset" style="font-size:8px;"> UTC${(dateObj.getTimezoneOffset() / -60).toFixed(1)}</sup>`;
+
                   const tableRowElement = document.createElement("tr");
                   const isOdd = handleCount % 2 !== 0;
-
+                
                   tableRowElement.innerHTML = `
                       <td class="left ${isOdd ? 'dark' : ''}">
                           <a class="${ratingMap.get(rating)}" href="/profile/${handle}">${handle}</a>
@@ -87,7 +91,9 @@ async function init(handles) {
                               </div>
                           </a>
                       </td>
-                      <td class="${isOdd ? 'dark' : ''}">${new Date(submissionTime).toLocaleTimeString()}</td>
+                        <td class="status-small ${isOdd ? 'dark' : ''}">
+                                ${formattedTime}
+                        </td>
                   `;
                   tableBody.appendChild(tableRowElement);
               }
